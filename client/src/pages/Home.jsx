@@ -25,12 +25,12 @@ const Home = () => {
         >
           {/* Navbar only belongs to Sidebar */}
           <div className="h-16 border-b border-[#334155]">
-            <Navbar />
+            <Navbar selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
           </div>
 
           {/* Chat List */}
           <div className="h-[calc(100vh-64px)] overflow-y-auto">
-            <Sidebar onSelectUser={setSelectedUser} />
+            <Sidebar setSelectedUser={setSelectedUser} selectedUser={selectedUser} />
           </div>
         </aside>
 
@@ -44,7 +44,7 @@ const Home = () => {
           <ChatSection
             user={selectedUser}
             onBack={() => setSelectedUser(null)}
-            onUserClick={() => setShowRightSidebar(true)}
+            onUserClick={() => setShowRightSidebar(!showRightSidebar)}
           />
         </main>
 
