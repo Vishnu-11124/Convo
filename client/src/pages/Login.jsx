@@ -5,6 +5,10 @@ const Login = () => {
   const [currentState, setCurrentState] = useState("Sign up");
   const [showPassword, setShowPassword] = useState(false);
 
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
   };
@@ -73,6 +77,8 @@ const Login = () => {
                   />
 
                   <input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     type="text"
                     id="fullName"
                     placeholder="Enter your full name"
@@ -98,6 +104,8 @@ const Login = () => {
                 />
 
                 <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   type="tel"
                   id="phone"
                   placeholder="Enter your phone number"
@@ -123,6 +131,8 @@ const Login = () => {
                 />
 
                 <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   type={showPassword ? "text" : "password"}
                   id="password"
                   placeholder="Enter your password"
