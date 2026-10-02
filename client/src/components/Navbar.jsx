@@ -1,7 +1,10 @@
 import React from "react";
 import { UserRound } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate()
+
   const user = true;
 
   return (
@@ -23,7 +26,7 @@ const Navbar = () => {
 
       {/* Profile */}
       {user && (
-        <button className="group flex items-center gap-2 rounded-xl p-1.5 transition hover:bg-[#1E293B]">
+        <button onClick={() => navigate('/profile')} className="group flex items-center gap-2 rounded-xl p-1.5 transition hover:bg-[#1E293B]">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#334155]">
             <UserRound size={19} className="text-[#CBD5E1]" />
           </div>
