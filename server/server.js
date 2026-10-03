@@ -3,6 +3,7 @@ import "dotenv/config.js";
 import cors from "cors";
 import http from "http";
 import { connectDB } from "./config/db.js";
+import userRouter from "./routes/userRoute.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -12,6 +13,8 @@ connectDB()
 // middleware
 app.use(express.json({ limit: "4mb" }));
 app.use(cors());
+
+app.use('/api/users', userRouter)
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
