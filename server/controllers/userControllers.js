@@ -53,3 +53,46 @@ export const userRegister = asyncHandler(async (req, res) => {
     .status(201)
     .json(new ApiResponse(201, userData, "User registered successfully"));
 });
+
+export const userLogin = asyncHandler(async (req, res) => {
+  const { phone, password } = req.body;
+
+  if (!phone || !password) {
+    throw new ApiError(400, "Provide all the required data");
+  }
+
+  const normalizedPhone = phone.trim();
+
+  if (!/^[0-9]{10}$/.test(normalizedPhone)) {
+    throw new ApiError(400, "Invalid phone number");
+  }
+
+  const userExists = await User.findOne({ phone: normalizedPhone });
+
+  if (!userExists) {
+    throw new ApiError(401, "Invalid phone number or password");
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, userExists.password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid phone number or password");
+  }
+
+  const token = jwt.sign({ id: userExists._id }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
+
+  const userData = {
+    id: userExists._id,
+    fullName: userExists.fullName,
+    phone: userExists.phone,
+    profileImage: userExists.profileImage,
+    bio: userExists.bio,
+    token,
+  };
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, userData, "User logged in successfully"));
+});
