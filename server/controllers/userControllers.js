@@ -1,7 +1,7 @@
-import User from "../models/userModel";
-import ApiError from "../utils/ApiError";
-import ApiResponse from "../utils/ApiResponse";
-import asyncHandler from "../utils/asyncHandler";
+import User from "../models/userModel.js";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -95,4 +95,17 @@ export const userLogin = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(new ApiResponse(200, userData, "User logged in successfully"));
+});
+
+export const getProfile = asyncHandler(async (req, res) => {
+  const userId = req.userId;
+
+  const userData = await User.findById(userId).select("-password");
+  if (!userData) {
+    throw new ApiError(404, "User not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, userData, "Successfully fetched user details"));
 });
