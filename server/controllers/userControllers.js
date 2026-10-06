@@ -4,6 +4,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { fullName, phone, password } = req.body;
@@ -108,4 +109,42 @@ export const getProfile = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(new ApiResponse(200, userData, "Successfully fetched user details"));
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const { fullName, bio } = req.body;
+  const imageFile = req.file;
+  const userId = req.userId;
+
+  const user = await User.findById(userId).select("-password");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (fullName !== undefined) {
+    const trimmedName = fullName.trim();
+
+    if (!trimmedName) {
+      throw new ApiError(400, "Full name cannot be empty");
+    }
+
+    user.fullName = trimmedName;
+  }
+
+  if (bio !== undefined) {
+    user.bio = bio.trim();
+  }
+
+  if (imageFile) {
+    const result = await cloudinary.uploader.upload(imageFile.path);
+
+    user.profileImage = result.secure_url;
+  }
+
+  await user.save();
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, user, "Profile updated successfully"));
 });
