@@ -77,3 +77,29 @@ export const getMessagesForUser = asyncHandler(async (req, res) => {
       ),
     );
 });
+
+export const markMessagesAsSeen = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const userId = req.userId;
+
+  const message = await Message.findOneAndUpdate(
+    {
+      _id: id,
+      receiverId: userId,
+    },
+    {
+      seen: true,
+    },
+    {
+      new: true,
+    },
+  );
+
+  if (!message) {
+    throw new ApiError(404, "Message not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "Message marked as seen successfully"));
+});
