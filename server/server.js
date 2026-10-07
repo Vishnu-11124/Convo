@@ -4,6 +4,7 @@ import cors from "cors";
 import http from "http";
 import { connectDB } from "./config/db.js";
 import userRouter from "./routes/userRoute.js";
+import messageRouter from "./routes/messageRoute.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +16,7 @@ app.use(express.json({ limit: "4mb" }));
 app.use(cors());
 
 app.use('/api/users', userRouter)
+app.use('/api/messages', messageRouter)
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
