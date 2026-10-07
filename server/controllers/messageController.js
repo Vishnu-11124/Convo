@@ -12,9 +12,31 @@ export const getUsersForSidebar = asyncHandler(async (req, res) => {
     "fullName profileImage",
   );
 
+  const users = await Promise.all(
+    usersList?.users.map(async (user) => {
+      const lastMessage = await Message.findOne({
+        $or: [
+          {
+            senderId: userId,
+            receiverId: user._id,
+          },
+          {
+            senderId: user._id,
+            receiverId: userId,
+          },
+        ],
+      }).sort({ createdAt: -1 });
+
+      return {
+        ...user.toObject(),
+        lastMessage: lastMessage?.message || "",
+      };
+    }) || [],
+  );
+
   res
     .status(200)
-    .json(new ApiResponse(200, usersList, "Users list fetched successfully"));
+    .json(new ApiResponse(200, users, "Users list fetched successfully"));
 });
 
 export const getMessagesForUser = asyncHandler(async (req, res) => {
