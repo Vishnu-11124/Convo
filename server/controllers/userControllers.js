@@ -193,3 +193,28 @@ export const addUserToChat = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, null, "User added to chat successfully"));
 });
+
+export const removeUserFromChat = asyncHandler(async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
+
+  const myChat = await MyChat.findOneAndUpdate(
+    { userId },
+    {
+      $pull: {
+        users: id,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  if (!myChat) {
+    throw new ApiError(404, "Chat list not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, myChat, "User removed from chat successfully"));
+});
