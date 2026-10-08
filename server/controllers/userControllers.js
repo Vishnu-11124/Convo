@@ -5,6 +5,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
+import MyChat from "../models/myChatModel.js";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { fullName, phone, password } = req.body;
@@ -147,4 +148,48 @@ export const updateProfile = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(new ApiResponse(200, user, "Profile updated successfully"));
+});
+
+export const addUserToChat = asyncHandler(async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
+
+  if (userId === id) {
+    throw new ApiError(400, "You cannot add yourself to chat");
+  }
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const myChat = await MyChat.findOne({ userId });
+
+  if (!myChat) {
+    const newChat = await MyChat.create({
+      userId,
+      users: [id],
+    });
+
+    return res
+      .status(201)
+      .json(new ApiResponse(201, newChat, "User added to chat successfully"));
+  }
+
+  await MyChat.findOneAndUpdate(
+    { userId },
+    {
+      $addToSet: {
+        users: id,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, null, "User added to chat successfully"));
 });
