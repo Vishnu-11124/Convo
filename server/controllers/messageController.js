@@ -3,6 +3,7 @@ import MyChat from "../models/myChatModel.js";
 import User from "../models/userModel.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { v2 as cloudinary } from "cloudinary";
 
 export const getUsersForSidebar = asyncHandler(async (req, res) => {
   const userId = req.userId;
@@ -102,4 +103,33 @@ export const markMessagesAsSeen = asyncHandler(async (req, res) => {
   res
     .status(200)
     .json(new ApiResponse(200, null, "Message marked as seen successfully"));
+});
+
+export const sendMessage = asyncHandler(async (req, res) => {
+  const { text } = req.body;
+  const imageFile = req.file;
+  const userId = req.userId;
+  const { id } = req.params;
+
+  if (!text?.trim() && !imageFile) {
+    throw new ApiError(400, "Message cannot be empty");
+  }
+
+  let imageUrl = null;
+
+  if (imageFile) {
+    const result = await cloudinary.uploader.upload(imageFile.path);
+    imageUrl = result.secure_url;
+  }
+
+  const newMessage = await Message.create({
+    senderId: userId,
+    receiverId: id,
+    text: text?.trim() || "",
+    image: imageUrl,
+  });
+
+  res
+    .status(201)
+    .json(new ApiResponse(201, newMessage, "Message sent successfully"));
 });
