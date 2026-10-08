@@ -1,6 +1,7 @@
 import Message from "../models/messageModel.js";
 import MyChat from "../models/myChatModel.js";
 import User from "../models/userModel.js";
+import { io, userSocketMap } from "../server.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { v2 as cloudinary } from "cloudinary";
@@ -128,6 +129,11 @@ export const sendMessage = asyncHandler(async (req, res) => {
     text: text?.trim() || "",
     image: imageUrl,
   });
+
+  const receiverSocketId = userSocketMap[id];
+  if (receiverSocketId) {
+    io.to(receiverSocketId).emit("newMessage", newMessage);
+  }
 
   res
     .status(201)

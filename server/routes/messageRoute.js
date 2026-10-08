@@ -7,6 +7,6 @@ const messageRouter = express.Router();
 
 messageRouter.get("/sidebar-users/:id/messages", userAuth, getMessagesForUser);
 messageRouter.put('/:id/messages-read', userAuth, markMessagesAsSeen)
-messageRouter.post('/user/:id/messages', userAuth, uplpoad.single('image'), sendMessage )
+messageRouter.post('/user/:id/send-messages', userAuth, uplpoad.single('image'), sendMessage )
 
 export default messageRouter;
