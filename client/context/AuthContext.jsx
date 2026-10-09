@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
       const { data } = await axios.get(backendUrl + "/api/users/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (data.message) {
+      if (data.success) {
         setAuthUser(data.data);
         connectSocket(data.data);
       }
@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }) => {
     authUser,
     onlineUsers,
     socket,
+    setToken
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

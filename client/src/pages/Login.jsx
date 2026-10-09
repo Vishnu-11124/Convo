@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Eye, EyeOff, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
+import { AuthContext } from "../../context/AuthContext";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const Login = () => {
+  const { setToken, backendUrl } = useContext(AuthContext);
+
   const [currentState, setCurrentState] = useState("Sign up");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -9,8 +14,64 @@ const Login = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (currentState === "Sign up") {
+      if (!fullName.trim()) {
+        return toast.error("You should enter full name");
+      }
+
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        return toast.error("Enter a valid phone number");
+      }
+
+      if (password.length < 6 || password.length > 12) {
+        return toast.error("Password should be 6-12 characters long");
+      }
+
+      try {
+        const { data } = await axios.post(backendUrl + "/api/users/register", {
+          fullName,
+          phone,
+          password,
+        });
+
+        if (data.success) {
+          localStorage.setItem("token", data.data.token);
+          setToken(data.data.token);
+          setFullName("");
+          setPhone("");
+          setPassword("");
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || error.message);
+      }
+    } else {
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        return toast.error("Enter a valid phone number");
+      }
+
+      if (password.length < 6 || password.length > 12) {
+        return toast.error("Password should be 6-12 characters long");
+      }
+
+      try {
+        const { data } = await axios.post(backendUrl + "/api/users/login", {
+          phone,
+          password,
+        });
+
+        if (data.success) {
+          localStorage.setItem("token", data.data.token);
+          setToken(data.data.token);
+          setPassword("");
+          setPhone("");
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || error.message);
+      }
+    }
   };
 
   const isSignUp = currentState === "Sign up";
