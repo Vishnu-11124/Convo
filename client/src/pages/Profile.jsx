@@ -1,18 +1,19 @@
 import { Camera, LogOut, UserRound, X, Phone, Pencil } from "lucide-react";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const {authUser, token, backendUrl} = useContext(AuthContext)
 
   const [formOpen, setFormOpen] = useState(false);
 
   const [image, setImage] = useState(null);
-  const [name, setName] = useState("Jafar Mone");
-  const [bio, setBio] = useState("Hey there! I'm using Convo.");
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
   const [preview, setPreview] = useState(null);
 
-  const phone = "8957254962";
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -35,6 +36,10 @@ const Profile = () => {
 
     setFormOpen(false);
   };
+
+  const handleLogout = () => {
+
+  }
 
   return (
     <div className="min-h-screen bg-[#0F172A] px-4 py-6 text-[#F8FAFC] sm:px-6">
@@ -62,9 +67,9 @@ const Profile = () => {
           <div className="flex flex-col items-center">
             <div className="relative">
               <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-[#334155] bg-[#0F172A]">
-                {preview ? (
+                {authUser?.profileImage ? (
                   <img
-                    src={preview}
+                    src={authUser?.profileImage}
                     alt="Profile"
                     className="h-full w-full object-cover"
                   />
@@ -78,7 +83,7 @@ const Profile = () => {
 
             <div className="mt-2 flex items-center gap-2 text-sm text-[#94A3B8]">
               <Phone size={15} />
-              <span>{phone}</span>
+              <span>{authUser?.phone}</span>
             </div>
           </div>
 
@@ -89,11 +94,10 @@ const Profile = () => {
             </p>
 
             <p className="text-sm leading-6 text-[#CBD5E1]">
-              {bio || "No bio added yet."}
+              {authUser?.bio || "No bio added yet."}
             </p>
           </div>
 
-          {/* Actions */}
           {/* Actions */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <button
@@ -105,7 +109,7 @@ const Profile = () => {
             </button>
 
             <button
-              onClick={() => navigate("/")}
+              onClick={handleLogout}
               className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#334155] px-4 text-sm font-medium text-[#F87171] transition hover:bg-[#0F172A] sm:flex-1"
             >
               <LogOut size={17} />
@@ -182,7 +186,7 @@ const Profile = () => {
                 </label>
 
                 <input
-                  value={name}
+                  value={authUser.fullName || name}
                   onChange={(e) => setName(e.target.value)}
                   type="text"
                   name="name"
@@ -211,7 +215,7 @@ const Profile = () => {
                   <input
                     type="tel"
                     id="phone"
-                    value={phone}
+                    value={authUser.phone}
                     disabled
                     className="h-11 w-full cursor-not-allowed rounded-xl border border-[#334155] bg-[#0F172A]/60 pl-11 pr-4 text-sm text-[#64748B] outline-none"
                   />
@@ -232,7 +236,7 @@ const Profile = () => {
                 </label>
 
                 <textarea
-                  value={bio}
+                  value={authUser?.bio || bio}
                   onChange={(e) => setBio(e.target.value)}
                   name="bio"
                   id="bio"
