@@ -12,6 +12,7 @@ import { formatMessageTime } from "../lib/utils";
 
 const ChatSection = ({ user, onBack, onUserClick }) => {
   const [message, setMessage] = useState("");
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const scrollEnd = useRef(null);
 
   useEffect(() => {
@@ -82,7 +83,7 @@ const ChatSection = ({ user, onBack, onUserClick }) => {
 
         {/* More */}
         <button
-          onClick={onUserClick}
+          onClick={() => setOptionsOpen(true)}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#94A3B8] transition hover:bg-[#1E293B] hover:text-[#F8FAFC]"
         >
           <MoreVertical size={20} />
