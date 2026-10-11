@@ -37,8 +37,13 @@ const Profile = () => {
     try {
       const formData = new FormData();
 
-      formData.append("fullName", name);
-      formData.append("bio", bio);
+      if(name){
+        formData.append("fullName", name);
+      }
+      
+      if(bio){
+        formData.append("bio", bio);
+      }
 
       if (image) {
         formData.append("profileImage", image);
