@@ -37,12 +37,12 @@ const Profile = () => {
     try {
       const formData = new FormData();
 
-      if(name){
-        formData.append("fullName", name);
+      if (name.trim() !== authUser.fullName) {
+        formData.append("fullName", name.trim());
       }
-      
-      if(bio){
-        formData.append("bio", bio);
+
+      if (bio.trim() !== (authUser.bio || "")) {
+        formData.append("bio", bio.trim());
       }
 
       if (image) {
