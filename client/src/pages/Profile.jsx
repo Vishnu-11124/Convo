@@ -5,15 +5,22 @@ import { AuthContext } from "../../context/AuthContext";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const {authUser, setToken, setAuthUser, socket, setOnlineUsers} = useContext(AuthContext)
+  const {
+    authUser,
+    setToken,
+    setAuthUser,
+    socket,
+    setOnlineUsers,
+    backendUrl,
+    token,
+  } = useContext(AuthContext);
 
   const [formOpen, setFormOpen] = useState(false);
 
   const [image, setImage] = useState(null);
-  const [name, setName] = useState('');
-  const [bio, setBio] = useState('');
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
   const [preview, setPreview] = useState(null);
-
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -27,27 +34,46 @@ const Profile = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
 
-    // Update profile API will come here
-    console.log({
-      image,
-      name,
-      bio,
-    });
+    try {
+      const formData = new FormData();
 
-    setFormOpen(false);
+      formData.append("fullName", name);
+      formData.append("bio", bio);
+
+      if (image) {
+        formData.append("profileImage", image);
+      }
+
+      const { data } = await axios.patch(
+        backendUrl + "/api/users/profile/update-profile",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (data.message) {
+        console.log("Profile updated:", data);
+        setFormOpen(false);
+      }
+    } catch (error) {
+      console.error(error.response?.data?.message || error.message);
+    }
   };
 
   const handleLogout = () => {
     try {
-      localStorage.removeItem('token')
-      setAuthUser(null)
-      setToken(null)
-      setOnlineUsers([])
-      socket.disconnect()
+      localStorage.removeItem("token");
+      setAuthUser(null);
+      setToken(null);
+      setOnlineUsers([]);
+      socket.disconnect();
     } catch (error) {
-      console.log(error.message)
+      console.log(error.message);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#0F172A] px-4 py-6 text-[#F8FAFC] sm:px-6">
