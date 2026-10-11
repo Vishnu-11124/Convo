@@ -5,7 +5,7 @@ import { AuthContext } from "../../context/AuthContext";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const {authUser, token, backendUrl} = useContext(AuthContext)
+  const {authUser, setToken, setAuthUser, socket, setOnlineUsers} = useContext(AuthContext)
 
   const [formOpen, setFormOpen] = useState(false);
 
@@ -24,7 +24,7 @@ const Profile = () => {
     }
   };
 
-  const handleUpdateProfile = (e) => {
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
 
     // Update profile API will come here
@@ -38,7 +38,15 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-
+    try {
+      localStorage.removeItem('token')
+      setAuthUser(null)
+      setToken(null)
+      setOnlineUsers([])
+      socket.disconnect()
+    } catch (error) {
+      console.log(error.message)
+    }
   }
 
   return (
