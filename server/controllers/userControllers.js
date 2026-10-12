@@ -124,25 +124,37 @@ export const updateProfile = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
+  // Update full name only when a non-empty value is provided
   if (fullName !== undefined && fullName.trim() !== "") {
     user.fullName = fullName.trim();
   }
 
-  if (bio !== undefined && bio.trim() !== "") {
+  // Allow users to clear their bio
+  if (bio !== undefined) {
     user.bio = bio.trim();
   }
 
-  try {
-  const result = await cloudinary.uploader.upload(
-    "https://res.cloudinary.com/demo/image/upload/sample.jpg"
-  );
+  // Upload the selected profile image to Cloudinary
+  if (imageFile) {
+    try {
+      const result = await cloudinary.uploader.upload(imageFile.path, {
+        resource_type: "image",
+      });
 
-  console.log("Test upload successful:", result.secure_url);
-} catch (error) {
-  console.error("Test upload failed:", error);
-}
-  
-  
+      console.log("Cloudinary URL:", result.secure_url);
+
+      user.profileImage = result.secure_url;
+    } catch (error) {
+      console.error("Cloudinary upload failed:", {
+        message: error.message,
+        http_code: error.http_code,
+        name: error.name,
+      });
+
+      throw error;
+    }
+  }
+
   await user.save();
 
   res
