@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     backendUrl,
+    getUser,
     token,
     authUser,
     onlineUsers,

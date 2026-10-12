@@ -6,6 +6,7 @@ import { connectDB } from "./config/db.js";
 import userRouter from "./routes/userRoute.js";
 import messageRouter from "./routes/messageRoute.js";
 import { Server } from "socket.io";
+import connectCloudinary from "./config/cloudinary.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -32,6 +33,8 @@ io.on("connection", (socket) => {
 });
 
 connectDB();
+
+connectCloudinary()
 
 // middleware
 app.use(express.json({ limit: "4mb" }));

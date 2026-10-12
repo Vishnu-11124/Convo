@@ -123,17 +123,11 @@ export const updateProfile = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
-  if (fullName !== undefined) {
-    const trimmedName = fullName.trim();
-
-    if (!trimmedName) {
-      throw new ApiError(400, "Full name cannot be empty");
-    }
-
-    user.fullName = trimmedName;
+  if (fullName !== undefined && fullName.trim() !== "") {
+    user.fullName = fullName.trim();
   }
 
-  if (bio !== undefined) {
+  if (bio !== undefined && bio.trim() !== "") {
     user.bio = bio.trim();
   }
 
