@@ -1,4 +1,12 @@
-import { Camera, LogOut, UserRound, X, Phone, Pencil } from "lucide-react";
+import {
+  ArrowLeft,
+  Camera,
+  LogOut,
+  Pencil,
+  Phone,
+  UserRound,
+  X,
+} from "lucide-react";
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -25,6 +33,21 @@ const Profile = () => {
   const [bio, setBio] = useState("");
   const [preview, setPreview] = useState(null);
 
+  // Fill the form with the current user's data when it opens
+  const openForm = () => {
+    setName(authUser?.fullName || "");
+    setBio(authUser?.bio || "");
+    setImage(null);
+    setPreview(null);
+    setFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setFormOpen(false);
+    setImage(null);
+    setPreview(null);
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
@@ -46,25 +69,20 @@ const Profile = () => {
       const currentBio = authUser.bio?.trim() || "";
       const updatedBio = bio.trim();
 
-      // Append the name only when it has changed and is not empty
       if (updatedName && updatedName !== currentName) {
         formData.append("fullName", updatedName);
       }
 
-      // Append the bio only when it has changed
-      // An empty bio is allowed, so users can clear it
       if (updatedBio !== currentBio) {
         formData.append("bio", updatedBio);
       }
 
-      // Append the image only when a new file is selected
-      if (image instanceof File) {
+      if (image) {
         formData.append("profileImage", image);
       }
 
-      // Don't send a request if nothing has changed
       if ([...formData.keys()].length === 0) {
-        setFormOpen(false);
+        closeForm();
         return;
       }
 
@@ -80,12 +98,11 @@ const Profile = () => {
 
       if (data.message === "Profile updated successfully") {
         getUser();
-        setFormOpen(false);
+        closeForm();
         toast.success(data.message);
       }
     } catch (error) {
       console.error(error.response?.data?.message || error.message);
-
       toast.error(error.response?.data?.message || "Failed to update profile");
     }
   };
@@ -96,7 +113,7 @@ const Profile = () => {
       setAuthUser(null);
       setToken(null);
       setOnlineUsers([]);
-      socket.disconnect();
+      socket?.disconnect();
     } catch (error) {
       console.log(error.message);
     }
@@ -104,122 +121,102 @@ const Profile = () => {
 
   return (
     authUser && (
-      <div className="min-h-screen bg-[#0F172A] px-4 py-6 text-[#F8FAFC] sm:px-6">
-        {/* Header */}
-        <div className="mx-auto flex w-full max-w-2xl items-center justify-between border-b border-[#334155] pb-4">
-          <div>
-            <h1 className="text-lg font-semibold">Profile</h1>
-            <p className="mt-0.5 text-xs text-[#64748B]">
-              Manage your personal information
-            </p>
-          </div>
-
+      <div className="flex h-dvh flex-col overflow-hidden bg-neutral-950 px-4 text-neutral-50">
+        {/* Top bar */}
+        <div className="mx-auto flex w-full max-w-sm items-center py-5">
           <button
             onClick={() => navigate("/")}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#94A3B8] transition hover:bg-[#1E293B] hover:text-[#F8FAFC]"
+            aria-label="Back"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 transition hover:bg-neutral-900 hover:text-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-500"
           >
-            <X size={19} />
+            <ArrowLeft size={18} />
           </button>
         </div>
 
-        {/* Profile Card */}
-        <div className="mx-auto mt-6 w-full max-w-2xl">
-          <div className="rounded-2xl border border-[#334155] bg-[#1E293B] p-6 sm:p-8">
-            {/* Avatar */}
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-[#334155] bg-[#0F172A]">
-                  {authUser?.profileImage ? (
-                    <img
-                      src={authUser?.profileImage}
-                      alt="Profile"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <UserRound size={48} className="text-[#64748B]" />
-                  )}
-                </div>
+        {/* Profile card */}
+        <div className="flex flex-1 items-start justify-center pb-6 sm:items-center">
+          <div className="w-full max-w-sm rounded-3xl border border-neutral-800 bg-neutral-900 p-8">
+            {/* Avatar + identity */}
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-neutral-800 ring-1 ring-neutral-700 ring-offset-4 ring-offset-neutral-900">
+                {authUser?.profileImage ? (
+                  <img
+                    src={authUser.profileImage}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <UserRound size={40} className="text-neutral-500" />
+                )}
               </div>
 
-              <h2 className="mt-4 text-xl font-semibold">
+              <h1 className="mt-6 text-xl font-semibold tracking-tight">
                 {authUser.fullName}
-              </h2>
+              </h1>
 
-              <div className="mt-2 flex items-center gap-2 text-sm text-[#94A3B8]">
-                <Phone size={15} />
-                <span>{authUser?.phone}</span>
-              </div>
+              <p className="mt-1.5 flex items-center gap-1.5 text-sm text-neutral-400">
+                <Phone size={13} />
+                {authUser?.phone}
+              </p>
             </div>
 
             {/* Bio */}
-            <div className="mt-8 border-t border-[#334155] pt-6">
-              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[#64748B]">
-                About
-              </p>
-
-              <p className="text-sm leading-6 text-[#CBD5E1]">
-                {authUser?.bio || "No bio added yet."}
-              </p>
-            </div>
+            <p className="mx-auto mt-6 max-w-xs text-center text-sm leading-6 text-neutral-400">
+              {authUser?.bio || "No bio yet. Add one to tell people about you."}
+            </p>
 
             {/* Actions */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 space-y-2">
               <button
-                onClick={() => setFormOpen(true)}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#6366F1] px-4 text-sm font-semibold text-white transition hover:bg-[#5558E8] sm:flex-1"
+                onClick={openForm}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-neutral-50 text-sm font-medium text-neutral-950 transition hover:bg-neutral-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-400"
               >
-                <Pencil size={16} />
-                Edit Profile
+                <Pencil size={15} />
+                Edit profile
               </button>
 
               <button
                 onClick={handleLogout}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#334155] px-4 text-sm font-medium text-[#F87171] transition hover:bg-[#0F172A] sm:flex-1"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-medium text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-neutral-500"
               >
-                <LogOut size={17} />
-                Logout
+                <LogOut size={15} />
+                Log out
               </button>
             </div>
           </div>
         </div>
 
-        {/* Edit Profile Modal */}
+        {/* Edit profile modal */}
         {formOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-2xl border border-[#334155] bg-[#1E293B] shadow-2xl">
-              {/* Modal Header */}
-              <div className="flex items-center justify-between border-b border-[#334155] px-5 py-4">
-                <div>
-                  <h2 className="text-base font-semibold">Edit Profile</h2>
-
-                  <p className="mt-0.5 text-xs text-[#64748B]">
-                    Update your profile information
-                  </p>
-                </div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+            <div className="max-h-full w-full max-w-sm overflow-y-auto rounded-3xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl">
+              {/* Header */}
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="text-base font-semibold">Edit profile</h2>
 
                 <button
                   type="button"
-                  onClick={() => setFormOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-[#64748B] transition hover:bg-[#0F172A] hover:text-[#F8FAFC]"
+                  onClick={closeForm}
+                  aria-label="Close"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-50"
                 >
-                  <X size={18} />
+                  <X size={17} />
                 </button>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleUpdateProfile} className="space-y-5 p-5">
-                {/* Profile Image */}
-                <div className="flex justify-center">
-                  <div className="relative">
-                    <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-[#334155] bg-[#0F172A]">
-                      {preview ? (
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
+                {/* Photo + name */}
+                <div className="flex items-end gap-4">
+                  <div className="relative shrink-0">
+                    <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-neutral-800 ring-1 ring-neutral-700">
+                      {preview || authUser?.profileImage ? (
                         <img
-                          src={preview}
+                          src={preview || authUser.profileImage}
                           alt="Profile preview"
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <UserRound size={38} className="text-[#64748B]" />
+                        <UserRound size={26} className="text-neutral-500" />
                       )}
                     </div>
 
@@ -233,103 +230,90 @@ const Profile = () => {
 
                     <label
                       htmlFor="image"
-                      className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-[#1E293B] bg-[#6366F1] text-white transition hover:bg-[#5558E8]"
+                      aria-label="Change photo"
+                      className="absolute -bottom-1 -right-1 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-neutral-900 bg-neutral-50 text-neutral-950 transition hover:bg-neutral-300"
                     >
-                      <Camera size={15} />
+                      <Camera size={12} />
                     </label>
+                  </div>
+
+                  <div className="flex-1">
+                    <label
+                      htmlFor="name"
+                      className="mb-1.5 block text-xs font-medium text-neutral-400"
+                    >
+                      Name
+                    </label>
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      type="text"
+                      name="name"
+                      id="name"
+                      placeholder="Your name"
+                      required
+                      className="h-10 w-full rounded-xl border border-neutral-800 bg-neutral-950 px-3 text-sm text-neutral-50 outline-none transition placeholder:text-neutral-600 focus:border-neutral-500"
+                    />
                   </div>
                 </div>
 
-                {/* Name */}
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="mb-2 block text-sm font-medium text-[#CBD5E1]"
-                  >
-                    Name
-                  </label>
-
-                  <input
-                    value={authUser.fullName || name}
-                    onChange={(e) => setName(e.target.value)}
-                    type="text"
-                    name="name"
-                    id="name"
-                    placeholder="Enter your name"
-                    required
-                    className="h-11 w-full rounded-xl border border-[#334155] bg-[#0F172A] px-4 text-sm text-[#F8FAFC] outline-none transition placeholder:text-[#475569] focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/10"
-                  />
-                </div>
-
-                {/* Phone - Read Only */}
+                {/* Phone (read only) */}
                 <div>
                   <label
                     htmlFor="phone"
-                    className="mb-2 block text-sm font-medium text-[#CBD5E1]"
+                    className="mb-1.5 block text-xs font-medium text-neutral-400"
                   >
-                    Phone Number
+                    Phone number
                   </label>
-
-                  <div className="relative">
-                    <Phone
-                      size={17}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B]"
-                    />
-
-                    <input
-                      type="tel"
-                      id="phone"
-                      value={authUser.phone}
-                      disabled
-                      className="h-11 w-full cursor-not-allowed rounded-xl border border-[#334155] bg-[#0F172A]/60 pl-11 pr-4 text-sm text-[#64748B] outline-none"
-                    />
-                  </div>
-
-                  <p className="mt-1.5 text-xs text-[#475569]">
-                    Phone number cannot be changed.
-                  </p>
+                  <input
+                    type="tel"
+                    id="phone"
+                    value={authUser.phone}
+                    disabled
+                    className="h-10 w-full cursor-not-allowed rounded-xl border border-neutral-800 bg-neutral-950/50 px-3 text-sm text-neutral-500 outline-none"
+                  />
                 </div>
 
                 {/* Bio */}
                 <div>
-                  <label
-                    htmlFor="bio"
-                    className="mb-2 block text-sm font-medium text-[#CBD5E1]"
-                  >
-                    Bio
-                  </label>
-
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label
+                      htmlFor="bio"
+                      className="text-xs font-medium text-neutral-400"
+                    >
+                      Bio
+                    </label>
+                    <span className="text-xs text-neutral-600">
+                      {bio.length}/150
+                    </span>
+                  </div>
                   <textarea
-                    value={authUser?.bio || bio}
+                    value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     name="bio"
                     id="bio"
-                    rows={4}
+                    rows={3}
                     maxLength={150}
-                    placeholder="Tell something about yourself..."
-                    className="w-full resize-none rounded-xl border border-[#334155] bg-[#0F172A] px-4 py-3 text-sm leading-5 text-[#F8FAFC] outline-none transition placeholder:text-[#475569] focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/10"
+                    placeholder="Write a short bio"
+                    className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-950 px-3 py-2.5 text-sm leading-5 text-neutral-50 outline-none transition placeholder:text-neutral-600 focus:border-neutral-500"
                   />
-
-                  <p className="mt-1 text-right text-xs text-[#475569]">
-                    {bio.length}/150
-                  </p>
                 </div>
 
                 {/* Buttons */}
-                <div className="flex gap-3 pt-1">
+                <div className="flex gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => setFormOpen(false)}
-                    className="h-11 flex-1 rounded-xl border border-[#334155] text-sm font-medium text-[#CBD5E1] transition hover:bg-[#0F172A]"
+                    onClick={closeForm}
+                    className="h-10 flex-1 rounded-full border border-neutral-800 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
                   >
                     Cancel
                   </button>
 
                   <button
                     type="submit"
-                    className="h-11 flex-1 rounded-xl bg-[#6366F1] text-sm font-semibold text-white transition hover:bg-[#5558E8]"
+                    className="h-10 flex-1 rounded-full bg-neutral-50 text-sm font-medium text-neutral-950 transition hover:bg-neutral-200"
                   >
-                    Save Changes
+                    Save changes
                   </button>
                 </div>
               </form>

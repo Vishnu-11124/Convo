@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 import MyChat from "../models/myChatModel.js";
+import fs from "fs/promises";
 
 export const userRegister = asyncHandler(async (req, res) => {
   const { fullName, phone, password } = req.body;
@@ -131,12 +132,17 @@ export const updateProfile = asyncHandler(async (req, res) => {
     user.bio = bio.trim();
   }
 
-  if (imageFile) {
-    const result = await cloudinary.uploader.upload(imageFile.path);
+  try {
+  const result = await cloudinary.uploader.upload(
+    "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+  );
 
-    user.profileImage = result.secure_url;
-  }
-
+  console.log("Test upload successful:", result.secure_url);
+} catch (error) {
+  console.error("Test upload failed:", error);
+}
+  
+  
   await user.save();
 
   res
